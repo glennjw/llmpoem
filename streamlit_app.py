@@ -1,6 +1,7 @@
 #streamlit_app.py
 
-import streamlit as stst.write("Hello ,let's learn how to build a streamlit app together")
+import streamlit as st
+st.write("Hello ,let's learn how to build a streamlit app together")
 
 
 
