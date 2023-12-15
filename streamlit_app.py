@@ -26,7 +26,7 @@ import pickle
 
 
 # Streamlit app
-st.title("When Shake Spear meets modern singers")
+st.title("When Shakespeare meets modern singers")
 st.subheader("AI lyrics generator")
 
 # User input text area
