@@ -26,7 +26,8 @@ import pickle
 
 
 # Streamlit app
-st.title("LLM Lyrics Generation")
+st.title("When Shake Spear meets modern singers")
+st.subheader("AI lyrics generator")
 
 # User input text area
 user_input = st.text_area("Enter a starting text:", "Once upon a time in a land far away...")
