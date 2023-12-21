@@ -30,7 +30,7 @@ st.title("When Shakespeare meets modern singers")
 st.subheader("AI lyrics generator")
 
 # User input text area
-user_input = st.text_area("Enter a starting text:", "Once upon a time in a land far away...")
+user_input = st.text_area("lyrics ...")
 
 # Button to generate lyrics
 if st.button("Generate Lyrics"):
