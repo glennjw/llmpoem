@@ -92,9 +92,9 @@ def generate_text(button_index):
 st.title("Lyrics Generation")
 st.subheader("")
 
-col11, col12 = st.columns([1,3])
-col21, col22 = st.columns([1,3])
-col31, col32 = st.columns([1,3])
+col11, col12, col13 = st.columns([2,2,4])
+col21, col22, col23 = st.columns([2,2,4])
+col31, col32, col33 = st.columns([2,2,4])
 
 
 if 'clickedc1' not in st.session_state:
@@ -108,39 +108,49 @@ if 'clickedc3' not in st.session_state:
 def a():
     text1 = generate_text(1)
     st.session_state.clickedc1 = text1
-    col12.empty()
-    col12.write(text1)
+    #col13.empty()
+    col13.write(text1)
 
 
 def b():
     text2 = generate_text(2)
     st.session_state.clickedc2 = text2
-    col22.empty()
-    col22.write(text2)
+    #col23.empty()
+    col23.write(text2)
 
 
 def c():
     text3 = generate_text(3)
     st.session_state.clickedc3 = text3
     #col32.empty()
-    col32.text(text3)
+    col33.text(text3)
 
 
-with col11:
+with col12:
     if st.session_state.clickedc1:
-        col12.text(st.session_state.clickedc1)
+        col13.text(st.session_state.clickedc1)
     runButton = st.button(" Shakespeare ", on_click=a)
 
 
-with col21:
+with col22:
     if st.session_state.clickedc2:
-        col22.text(st.session_state.clickedc2)
+        col23.text(st.session_state.clickedc2)
     runButton = st.button("Modern lyrics",on_click=b)
 
 
-with col31:
+with col32:
     if st.session_state.clickedc3:
-        col32.text(st.session_state.clickedc3)
+        col33.text(st.session_state.clickedc3)
     runButton = st.button("   Mix   ",on_click=c)
 
+# image
+
+with col11:
+    st.image("img/shakespeare.jpg", use_column_width=True)  # Replace "your_image.png" with the path to your image
+
+with col21:
+    st.image("img/singer.jpg", use_column_width=True)  # Replace "your_image.png" with the path to your image
+
+with col31:
+    st.image("img/ai_singer.jpeg", use_column_width=True)  # Replace "your_image.png" with the path to your image
 
