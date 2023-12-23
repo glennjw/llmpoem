@@ -1,47 +1,146 @@
 #streamlit_app.py
 
+import torch
 import streamlit as st
+import pandas as pd
+from BigramLanguageModel import BigramLanguageModel, Block, MultiHeadAttention, Head, FeedFoward
+
+
+
+#st.set_page_config(page_title="Speech-to-Text Transcription & ChatGPT", layout="wide", page_icon="🎤")
+# Add a custom CSS style for the button
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+no2model = {
+     1: "shakespeare",
+     2: "modern",
+     3: "mix"
+}
+
+
+def decoder(text):
+    # here are all the unique characters that occur in this text
+    chars = sorted(list(set(text)))
+    vocab_size = len(chars)
+    # create a mapping from characters to integers
+    #stoi = { ch:i for i,ch in enumerate(chars) }
+    itos = { i:ch for i,ch in enumerate(chars) }
+    #encode = lambda s: [stoi[c] for c in s] # encoder: take a string, output a list of integers
+    decode = lambda l: ''.join([itos[i] for i in l]) # decoder: take a list of integers, output     a string
+    return decode
+
+def parser():
+    shakespeare, new_lyrics = '', ''
+    
+    with open('dataset/shakespeare.txt', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        lines = [s.rstrip('\n') for s in lines]
+        lines = [s for s in lines if not s.endswith(":")]
+        lines = [s for s in lines if s!='']
+        shakespeare = ' '.join(lines)
+    
+    new_lyrics = pd.read_csv('dataset/modern_lyrics.csv')
+    new_lyrics = ' '.join(new_lyrics['lyrics'])
+    
+    decode = {1:decoder(shakespeare),
+              2:decoder(new_lyrics),
+              3:decoder(new_lyrics + ' '+ shakespeare)
+    }
+    return decode
+
+
+
+
+def gen(model):
+    preM = no2model[model]
+    #print('model: gen ', preM)
+
+    preM = torch.load("models/"+preM+".pth")
+    vocab_size = 64
+    if 1==model:
+        vocab_size = 64
+    elif 2==model:
+        vocab_size = 670
+    elif 3==model:
+        vocab_size = 707
+    m = BigramLanguageModel(vocab_size)
+    m.load_state_dict(preM)
+    
+    # generate from the model
+    context = torch.zeros((1, 1), dtype=torch.long, device=device)
+    text = parser()[model](m.generate(context, max_new_tokens=500)[0].tolist())
+    if 1==model:
+        replacement_dict = {';':'\n', '?':'\n', '.':'\n', '!':'\n'}
+        for old_char, new_char in replacement_dict.items():
+            text = text.replace(old_char, new_char)
+    else:
+        text = list(text)
+        for i in range(len(text)):
+            if text[i]==' ' and i%15==0:
+                text[i] = '\n'
+        text = ''.join(text)
+    return text
+
 
 def generate_text(button_index):
-    if button_index == 1:
-        return "Text generated from Button 1."
-    elif button_index == 2:
-        return "Text generated from Button 2."
-    elif button_index == 3:
-        return "Text generated from Button 3."
+    text = gen(button_index)
+    return text
+
 
 # Streamlit app layout
-st.title("Lyrics Generation App")
+st.title("Lyrics Generation")
+st.subheader("")
 
-import streamlit as st
+col11, col12 = st.columns([1,3])
+col21, col22 = st.columns([1,3])
+col31, col32 = st.columns([1,3])
 
-# Function to generate text based on the button clicked
-def generate_text(button_index):
-    if button_index == 1:
-        return "Text generated from Button 1."
-    elif button_index == 2:
-        return "Text generated from Button 2."
-    elif button_index == 3:
-        return "Text generated from Button 3."
 
-# Streamlit app layout
-st.title("Text Generation App")
+if 'clickedc1' not in st.session_state:
+       st.session_state.clickedc1 = False
+if 'clickedc2' not in st.session_state:
+       st.session_state.clickedc2 = False
+if 'clickedc3' not in st.session_state:
+       st.session_state.clickedc3 = False
 
-# Create a two-column layout for buttons and text areas
-col1, col2 = st.beta_columns(2)
 
-# Button 1 and Text Window 1
-if col1.button("Generate Text from Button 1"):
+def a():
     text1 = generate_text(1)
-    col1.text_area("Generated Text (Button 1)", text1)
+    st.session_state.clickedc1 = text1
+    col12.empty()
+    col12.write(text1)
 
-# Button 2 and Text Window 2
-if col1.button("Generate Text from Button 2"):
+
+def b():
     text2 = generate_text(2)
-    col1.text_area("Generated Text (Button 2)", text2)
+    st.session_state.clickedc2 = text2
+    col22.empty()
+    col22.write(text2)
 
-# Button 3 and Text Window 3
-if col2.button("Generate Text from Button 3"):
+
+def c():
     text3 = generate_text(3)
-    col2.text_area("Generated Text (Button 3)", text3)
+    st.session_state.clickedc3 = text3
+    #col32.empty()
+    col32.text(text3)
+
+
+with col11:
+    if st.session_state.clickedc1:
+        col12.text(st.session_state.clickedc1)
+    runButton = st.button(" Shakespeare ", on_click=a)
+
+
+with col21:
+    if st.session_state.clickedc2:
+        col22.text(st.session_state.clickedc2)
+    runButton = st.button("Modern lyrics",on_click=b)
+
+
+with col31:
+    if st.session_state.clickedc3:
+        col32.text(st.session_state.clickedc3)
+    runButton = st.button("   Mix   ",on_click=c)
+
 
